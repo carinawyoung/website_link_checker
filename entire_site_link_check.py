@@ -1,19 +1,12 @@
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
-<<<<<<< HEAD
-from requests.exceptions import Timeout, ConnectionError, ReadTimeout
-=======
 from requests.exceptions import Timeout, ConnectionError
->>>>>>> 349884f (add user input to link checker, and .gitignore file)
 from tabulate import tabulate
 from urllib.parse import urlparse, urljoin
 
 
-<<<<<<< HEAD
-=======
 ##################################################
->>>>>>> 349884f (add user input to link checker, and .gitignore file)
 def interior_pages_list(domain):
     # Define the target URL
     target_url = domain
@@ -54,10 +47,7 @@ def interior_pages_list(domain):
         print(f"Failed to retrieve the webpage. Status code: {response.status_code}")
 
 
-<<<<<<< HEAD
-=======
 ##################################################
->>>>>>> 349884f (add user input to link checker, and .gitignore file)
 def get_footer_navbar_tags(url):
     response = requests.get(url, timeout=10)
 
@@ -65,13 +55,8 @@ def get_footer_navbar_tags(url):
         soup = BeautifulSoup(response.text, "html.parser")
 
         # Specify the CSS selector for the footer <a> tags
-<<<<<<< HEAD
-        footer_selector = "footer a"
-        navbar_selector = ".navbar a"
-=======
         footer_selector = "footer a, .footer a"
         navbar_selector = ".navbar a, .nav a"
->>>>>>> 349884f (add user input to link checker, and .gitignore file)
 
         # Find all <a> tags in footer and navbar and format as "http://....""
         footer_a_tags = soup.select(footer_selector)
@@ -98,11 +83,6 @@ def get_footer_navbar_tags(url):
         return sorted(footer_and_navbar_hrefs)
 
 
-<<<<<<< HEAD
-### START OF MAIN CODE ###
-
-domain = "https://www.rc.virginia.edu"
-=======
 ################ START OF MAIN CODE ######################
 
 # domain = "https://www.rc.virginia.edu"
@@ -111,20 +91,13 @@ domain = input("What domain would you like to check?: ")
 # strip the trailing / in the domain name
 if domain[-1] == "/":
     domain = domain[:-1]
->>>>>>> 349884f (add user input to link checker, and .gitignore file)
 
 footer_and_navbar_links = get_footer_navbar_tags(domain)
 
 interior_page_list = interior_pages_list(domain)
 
-<<<<<<< HEAD
-for page in interior_page_list:
-    # Check for connectivity
-    try:
-=======
 for page in interior_page_list:  ####
     try:  # Check for connectivity
->>>>>>> 349884f (add user input to link checker, and .gitignore file)
         response = requests.get(page, timeout=10)
         response.raise_for_status()  # Raise an exception for HTTP errors
     except (Timeout, ConnectionError, requests.exceptions.HTTPError) as error:
@@ -132,32 +105,20 @@ for page in interior_page_list:  ####
         print("Could not connect to the website.")
     else:
         if response.status_code == 200:
-<<<<<<< HEAD
-            print(f"\n\nThe website {page} is up and running")
-
-        # Find all the links on the website page
-=======
             print(f"\n\nChecking Website: {page} ")
 
         ## Find all the anchor tags on the page
->>>>>>> 349884f (add user input to link checker, and .gitignore file)
         soup = BeautifulSoup(response.content, "html.parser")
 
         anchors = set(soup.find_all("a"))
 
         link_list = []  # list for info I want to print at the end
 
-<<<<<<< HEAD
-        for anchor in anchors:
-            try:
-                href_link = anchor.get("href")
-=======
         ## Extract hyperlinks and check for functionality
         for anchor in anchors:
             try:
                 href_link = anchor.get("href")
                 # Exclude some links
->>>>>>> 349884f (add user input to link checker, and .gitignore file)
                 if (
                     href_link is None  # exclude tags that have no link
                     or href_link == ""  # exclude empty links
@@ -165,34 +126,22 @@ for page in interior_page_list:  ####
                     or href_link[0] == "#"  # exclude within page links
                 ):
                     continue
-<<<<<<< HEAD
-                if href_link[0] == "/":
-                    href_link = "https://www.rc.virginia.edu" + href_link
-=======
                 # Format remaining links
                 if href_link[0] == "/":
                     href_link = domain + href_link
->>>>>>> 349884f (add user input to link checker, and .gitignore file)
 
                 if href_link[-1] == "/":
                     href_link = href_link[0:-1]
 
-<<<<<<< HEAD
-=======
                 # Check link functionality
                 #### Check all links on main page
->>>>>>> 349884f (add user input to link checker, and .gitignore file)
                 if interior_page_list.index(page) == 0:
                     link_page = requests.get(href_link, timeout=10)
                     link_list.append([link_page.status_code, anchor.text, href_link])
                 else:
-<<<<<<< HEAD
-                    if href_link not in footer_and_navbar_links:
-=======
                     if (
                         href_link not in footer_and_navbar_links
                     ):  #### Check subset of links on remaining pages
->>>>>>> 349884f (add user input to link checker, and .gitignore file)
                         link_page = requests.get(href_link, timeout=10)
                         link_list.append(
                             [link_page.status_code, anchor.text, href_link]
@@ -207,12 +156,8 @@ for page in interior_page_list:  ####
             ) as error:
                 link_list.append(["Error", anchor.text, href_link, error])
 
-<<<<<<< HEAD
-        # lists to hold info
-=======
         #### Formatting
         # lists for seperating items by status
->>>>>>> 349884f (add user input to link checker, and .gitignore file)
         code_200 = [["Linking Text on Website", "Link"]]
         code_404 = [["Linking Text on Website", "Link"]]
         exception_errors = []
