@@ -1,2 +1,3 @@
-# website_link_checker
+# Website link checker
+
 Checks for broken links or error responses on a user-selected website.
