@@ -218,3 +218,26 @@ for page in interior_page_list:  ####
                     print("Link: ", log[1])
                     print("Error: ", log[2])
                     print()
+
+
+### Ideas for additional features:
+
+# (1) Add message that tells how many links have been checked on each page.
+
+# (2) Adjust code to allow it to check domains that are not the root or base domain.
+#  the issue with this ^ is needing to identify the base domain vs the non-base domain,
+#  because this code:
+# for anchor_list in (footer_a_tags, navbar_a_tags):
+#     for anchor in anchor_list:
+#         href_link = anchor.get("href")
+#         if href_link != "#" and href_link is not None:
+#             if href_link[0] == "/":
+#                 href_link = domain + href_link
+#             if href_link[-1] == "/":
+#                 href_link = href_link[0:-1]
+#  will not work correctly when there is a path like /visit-us.html in the header that should be paired with
+#  the base domain, but is instead being paired with the non-base domain, and then
+#  coming up as a 404 error.
+# For example, when checking the non-base domain https://www.skagitcohousing.org/our-blog, the header on that page has
+#  the hyperlink /our-location.html, and the code pairs it with the non-base domain
+#  to get https://www.skagitcohousing.org/our-blog/our-location.html, when the correct pairing is https://www.skagitcohousing.org/our-location.html
