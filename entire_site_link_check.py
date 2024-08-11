@@ -220,24 +220,25 @@ for page in interior_page_list:  ####
                     print()
 
 
-### Ideas for additional features:
-
-# (1) Add message that tells how many links have been checked on each page.
-
-# (2) Adjust code to allow it to check domains that are not the root or base domain.
-#  the issue with this ^ is needing to identify the base domain vs the non-base domain,
-#  because this code:
-# for anchor_list in (footer_a_tags, navbar_a_tags):
-#     for anchor in anchor_list:
-#         href_link = anchor.get("href")
-#         if href_link != "#" and href_link is not None:
-#             if href_link[0] == "/":
-#                 href_link = domain + href_link
-#             if href_link[-1] == "/":
-#                 href_link = href_link[0:-1]
-#  will not work correctly when there is a path like /visit-us.html in the header that should be paired with
-#  the base domain, but is instead being paired with the non-base domain, and then
-#  coming up as a 404 error.
-# For example, when checking the non-base domain https://www.skagitcohousing.org/our-blog, the header on that page has
-#  the hyperlink /our-location.html, and the code pairs it with the non-base domain
-#  to get https://www.skagitcohousing.org/our-blog/our-location.html, when the correct pairing is https://www.skagitcohousing.org/our-location.html
+### Note
+# This code is meant to work with a root-domain web address, like https://www.cats.com as opposed to
+#  a web address that includes a path (like https://www.cats.com/housecats).
+#
+# The reason for this is that this code:
+#
+#    for anchor_list in (footer_a_tags, navbar_a_tags):
+#        for anchor in anchor_list:
+#            href_link = anchor.get("href")
+#            if href_link != "#" and href_link is not None:
+#                if href_link[0] == "/":
+#                    href_link = domain + href_link
+#                if href_link[-1] == "/":
+#                    href_link = href_link[0:-1]
+#
+#  pairs partial hyperlink paths in the header and footer (such as /visit-us.html)
+#  with the given user domain to make a full web address.
+#
+# This works if the domain given by the user is a root-domain (such as https://www.skagitcohousing.org) to make
+#  the address https://www.skagitcohousing.org/visit-us.html. Bbut if the user address entered is a non-root domain
+#  like https://www.skagitcohousing.org/our-blog, the code pairs it with the non-base domain
+#  to get https://www.skagitcohousing.org/our-blog/visit-us.html, which gives a 404 error because it's a non-existent web address.
