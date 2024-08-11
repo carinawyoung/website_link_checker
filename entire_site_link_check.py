@@ -6,8 +6,12 @@ from tabulate import tabulate
 from urllib.parse import urlparse, urljoin
 
 
-# Testing making a change
 ##################################################
+# This function reviews all the hyperlinks on the user-entered domain page
+# and identifies those that link to pages that are a part of the same domain.
+# These are the pages on which the program will check the hyperlinks.
+
+
 def interior_pages_list(domain):
     # Define the target URL
     target_url = domain
@@ -49,14 +53,21 @@ def interior_pages_list(domain):
 
 
 ##################################################
+# Headers and footers are generally repeated on each webpage in the domain.
+# This function makes a list of the header and footer hyperlinks so they can
+# be checked once when the initial domain page is checked, but not on other pages in the domain.
+
+
 def get_footer_navbar_tags(url):
     response = requests.get(url, timeout=10)
 
     if response.status_code == 200:
         soup = BeautifulSoup(response.text, "html.parser")
 
-        # Specify the CSS selector for the footer <a> tags
-        footer_selector = "footer a, .footer a"
+        # Specify the CSS selector for the footer <a> tags.
+        # Different sites identify the header and footer settings with
+        # different class names, so this may need to be adjusted to match those classes
+        footer_selector = "footer a, .footer a, .footer_area a"
         navbar_selector = ".navbar a, .nav a"
 
         # Find all <a> tags in footer and navbar and format as "http://....""
@@ -65,28 +76,23 @@ def get_footer_navbar_tags(url):
 
         footer_and_navbar_hrefs = set()
 
-        for anchor in footer_a_tags:
-            href_link = anchor.get("href")
-            if href_link != "#" and href_link is not None:
-                if href_link[0] == "/":
-                    href_link = domain + href_link
+        for anchor_list in (footer_a_tags, navbar_a_tags):
+            for anchor in anchor_list:
+                href_link = anchor.get("href")
+                if href_link != "#" and href_link is not None:
+                    if href_link[0] == "/":
+                        href_link = domain + href_link
+                    if href_link[-1] == "/":
+                        href_link = href_link[0:-1]
 
-                footer_and_navbar_hrefs.add(href_link)
-
-        for anchor in navbar_a_tags:
-            href_link = anchor.get("href")
-            if href_link != "#" and href_link is not None:
-                if href_link[0] == "/":
-                    href_link = domain + href_link
-
-                footer_and_navbar_hrefs.add(href_link)
+                    footer_and_navbar_hrefs.add(href_link)
 
         return sorted(footer_and_navbar_hrefs)
 
 
 ################ START OF MAIN CODE ######################
 
-# domain = "https://www.rc.virginia.edu"
+# domain = "https://www.rc.virginia.edu" # optional test domain
 domain = input("What domain would you like to check?: ")
 
 # strip the trailing / in the domain name
@@ -128,8 +134,12 @@ for page in interior_page_list:  ####
                 ):
                     continue
                 # Format remaining links
-                if href_link[0] == "/":
+                if len(href_link) > 1 and href_link[0] == "/" and href_link[1] == "/":
+                    href_link = "https:" + href_link
+                elif href_link[0] == "/":
                     href_link = domain + href_link
+                elif href_link[0:4] != "http":
+                    href_link = domain + "/" + href_link
 
                 if href_link[-1] == "/":
                     href_link = href_link[0:-1]
@@ -175,23 +185,36 @@ for page in interior_page_list:  ####
             else:
                 other_issues.append([link_log[0], link_log[1], link_log[2]])
 
-        # print results out in nicely formatted view
-        if len(code_404) > 1:
-            print("\n*************** 404 Issues ********************* ")
-            print(tabulate(code_404, headers="firstrow", tablefmt="fancy_grid"))
+        # check for errors in lists, if none, print message
+        if (
+            (len(code_404) == 1)
+            and (len(exception_errors) == 0)
+            and (len(other_issues) == 1)
+        ):
+            print("    No issues found on this page")
 
-        # print("**************** 200 *****************************")
-        # print(tabulate(code_200, headers="firstrow", tablefmt="fancy_grid"))
-
-        if len(exception_errors) == 0:
-            continue
+        # there are errors are in lists, so print errors
         else:
-            print("**************** Error Issues *****************************")
-            for log in exception_errors:
-                print("Linking Text on Website: ", log[0])
-                print("Link: ", log[1])
-                print("Error: ", log[2])
-                print()
-        if len(other_issues) > 1:
-            print("**************** Other Status Codes *****************************")
-            print(tabulate(other_issues, headers="firstrow", tablefmt="fancy_grid"))
+            # print results out in nicely formatted view
+            if len(code_404) > 1:
+                print("\n*************** 404 Issues ********************* ")
+                print(tabulate(code_404, headers="firstrow", tablefmt="fancy_grid"))
+
+            # print("**************** 200 *****************************")
+            # print(tabulate(code_200, headers="firstrow", tablefmt="fancy_grid"))
+
+            if len(other_issues) > 1:
+                print(
+                    "**************** Other Status Codes *****************************"
+                )
+                print(tabulate(other_issues, headers="firstrow", tablefmt="fancy_grid"))
+
+            if len(exception_errors) == 0:
+                continue
+            else:
+                print("**************** Error Issues *****************************")
+                for log in exception_errors:
+                    print("Linking Text on Website: ", log[0])
+                    print("Link: ", log[1])
+                    print("Error: ", log[2])
+                    print()
